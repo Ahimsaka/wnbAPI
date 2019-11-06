@@ -32,64 +32,17 @@ Welcome to the jungle, fuckstick
 This file houses/consolidates the components of this Python WNBA stats
 handling convenience application.
 
-It was created because reading about statistical analysis was my own avenue
-to becoming a passionate basketball fan. I feel that the WNBA is putting out
-an extraordinary basketball product, and that lowering the bar for those
-who are interested in performing statistical analysis on the W can be a 
-wonderful way to bring new readers and viewers to the sport and the league. 
+It was created because the slim pickings of other WNBA Python Statistics tools 
+that I found were all converted from NBA tools, and had insufficient documentation
+for easy use. I thought it would be better to have a WNBA tool that was designed
+specifically for WNBA. 
 
-Though there were a handful of existing packages to access WNBA stats
-when I began work on wnbAPI, I found that, as a rule, these were NBA
-tools that were converted to WNBA tools after-the-fact, when the authors
-realized that the two leagues share a backend system for statistics. As 
-a result, the default parameters for these packages very rarely successfully
-pulled any data. Additionally, some of these packages seemed to mandate that 
-all parameters be input as arguments for every search. With around 30 params
-available at each endpoint, this is a lot of work, and seems barely more
-useful than typing out the URL string manually. These inadequacies led me
-to develop my own tool from scratch with the following goals:
-    
-    - wnbAPI should be a tailored solution that prioritizes the W. 
-    - wnbAPI should allow users to quickly create a search.
-    - wnbAPI should include sensible parameter defaults so that only.
-      the specifically desired parameters need be entererd by the user.
-    - wnbAPI should allow searches with no parameter input, and should.
-      return a valid data set for these searches. 
-    - wnbAPI should be sufficiently simple to allow a user with no prior.
-      coding experience to obtain the information they are looking for
-      in less than 10 minutes.
-    
-I hope that eventual collaboration with the authors of the existing tools
-will be possible, as we build a community around the complex numbers
-involved in this incredible sport. In particular, I would like to 
-thank the authors of py_ball, whose documentation was invaluable in the 
-creation of wnbAPI. 
-
-Planned future development of wnbAPI focuses on the addition of several
-additional features aimed at not only ease of access, but also allowing
-users to easily process, interpret, and visualize the data gathered. Intended
-improvements include:
-    - Data vizualization macros to create vizualizations that can
-      quickly and easily be inserted into HTML.
-    - Methods to calculate derivative advanced stats.
-    - Methods to compare groups of players against one another (separate 
-      from the existing parameters that allow queries for multiple players).
-    - Methods to search large datasets for statistical anomalies based on
-      standard deviation. 
-    - Most likely we will eventually add methods to generate CSVs with the
-      collected data. However, this is a very low priority, because
-      the package already integrates pandas DataFrames, which have
-      a built in method to generate csv files. That isn't my ideal
-      solution, but since the functionality exists I'd rather focus 
-      on new tools before refactoring the csv option. 
-
-The package currently consists of four main objects, all subclasses of a Search class. 
+The module consists of three main objects, all subclasses of a Search class. 
 These are:
     
     Player()
     Team()
     League()
-    Game()
     
 Each of these objects has a suite of methods representing the API endpoints
 of available data. 
@@ -165,4 +118,98 @@ There are two ways to use the search objects.
 
 
 """
+'''
+from Resources import * 
+from Team import Team
+from League import League
+from Player import Player
+from Game import Game
 
+########################################################################
+####                                                                ####
+####                              MAIN                              ####
+####                                                                ####
+########################################################################
+        
+def main(*args):
+
+    #if there are arguments, run in test mode.
+    if args:
+        
+        from testboard import teamTest, playerTest, leagueTest
+   
+        print('\n\n\n\n\n         TESTING BEGIN\n\n\n\n\n\
+                                                     READY FOR DIE?????')
+        tests = ''
+        
+        \'''
+        endpointSet = endpointTest(endpoints)
+        
+        for grade in endpointSet:
+            tests += str(grade[0]) + grade[1]
+             
+        print(tests + '\n')     
+        print('Passed ' + str(len([x for x in endpointSet if x[0]])) + 
+              ' general endpoint tests.' + '\n\n')
+        \'''
+        print('\n\n\n\n\
+                          PLAYER CLASS TEST SET START\n\n\n\n\n\
+            YOU CAN NEVER SURVIVE\n\n\n\n\n')
+        
+        
+        playerSet = playerTest()        
+        tests = ''
+        
+        for grade in playerSet:
+            tests += grade[1]
+        
+        print(tests+ '\n')
+        print('Passed ' + str(len([x for x in playerSet if x[0]])) + 
+              ' Player class endpoint tests.\n\n')
+        
+        print('\n\n\n\n\
+                          NOW DEADLY LEAGUE CLASS TEST SET ATTACK\n\n\n\n\n\
+                                                          YOU SURELY ARE DEFEATED!')
+        leagueSet = leagueTest()
+        
+        tests = ''
+        
+        for grade in leagueSet:
+            tests += grade[1]
+            
+            
+        print(tests+'\n')
+        print('Passed ' + str(len([x for x in leagueSet if x[0]])) + 
+              ' League class endpoint tests.' + '\n\n')        
+ 
+        print('\n\n\n\
+                      Hold your horse, coward. I have to watch over my Oven. \n\n\n\n\n\n\n\
+                          SURPRISE TEAM CLASS TEST SET START\n\n\n\n\n\
+            YOU HAVE MEET DEATH AT HAND')
+        
+        teamSet = teamTest()
+        
+        tests = ''
+        
+        for grade in teamSet:
+            tests += grade[1]
+            
+            
+        print(tests+'\n')
+        print('Passed ' + str(len([x for x in teamSet if x[0]])) + 
+              ' Team class endpoint tests.' + '\n\n')
+        
+    #if no arguments print this pithy lyric and take us to the house.    
+    else:
+        print('\n\n\n\nWelcome to the jungle, fuckstick\n\n\n\n  \
+                                            we\'re going to make you...\n\n\n\n\n\
+                                            ...speak in a considerate\n\
+                                                        tone of voice.')
+    
+
+'''
+from wnbAPI.search import *
+from wnbAPI.team import Team
+from wnbAPI.league import League
+from wnbAPI.game import Game
+from wnbAPI.player import Player

@@ -132,8 +132,7 @@ import requests            # import requests to make requests
 
 # Import default headers, basic team info, currentSeason value, 
 # and list of all possible parameters. 
-from resources import headers, teams, param_list, currentSeason
-
+from .resources import *
      
 
 class Search(object):

@@ -38,9 +38,9 @@ For information on the search history capabilities inherited from the Search
 method, please see the search module documentation. 
 """
 
-import search
+from wnbAPI.search import Search, currentSeason, requests, headers, DEBUG
 
-class Game(search.Search):
+class Game(Search):
     '''
     Extends Search class with methods to access endpoints for Game data. 
     
@@ -64,7 +64,7 @@ class Game(search.Search):
         
     '''
     def __init__(self, **params):
-        search.Search.__init__(self, **params)
+        Search.__init__(self, **params)
         # create dictionary of the endpoints assigned to each method. 
         # these could also have been stored inside each method. 
         # and that might have been a better choice, but I like
@@ -275,14 +275,15 @@ class Game(search.Search):
         '''
         # Since this method doesn't use the core search method, 
         # set input parameters to self.params now
-        # instead of passing them to search. 
+        # instead of passing them to 
+
         if params:
             self.setParams(params)
         
         # Set accepted params for this method to strings to use
         # in URL string. 
         gameID = self.params.get('GameID','1041900405')
-        season = self.params.get('Season', search.currentSeason)
+        season = self.params.get('Season', currentSeason)
         period = self.params.get('Period', 'full')
                 
         # For most endpoints, period accepts '' to mean fullgame
@@ -293,13 +294,13 @@ class Game(search.Search):
         
         # create requests Session object and set the default headers,
         # which are borrowed from the search module. 
-        s = search.requests.Session() # use requests from search to save import
-        s.headers = search.headers
+        s = requests.Session() # use requests from search to save import
+        s.headers = headers
                 
         # check the DEBUG flag in the search module
         # if the flag is set to True, send get request and 
         # return the full response object
-        if search.DEBUG == True:
+        if DEBUG == True:
             return s.get('http://data.wnba.com/data/5s/v2015/json/mobile_teams/' \
                          'wnba/' + season + '/scores/pbp/' + gameID + '_' 
                          + period + '_pbp.json')

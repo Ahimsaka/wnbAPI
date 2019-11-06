@@ -37,9 +37,9 @@ For information on the search history capabilities inherited from the Search
 method, please see the search module documentation. 
 """
 
-import search  
+from wnbAPI.search import Search, currentSeason
     
-class League(search.Search):
+class League(Search):
     '''
     Extends Search class with methods to access endpoints for league data.
     
@@ -82,7 +82,7 @@ class League(search.Search):
                 'SeasonType':'Regular Season', # Requires string input
                 'VsConference': '',# Required but empty string accepted 
                 'VsDivision':'',   # Required but empty string accepted
-                'Season': search.currentSeason, # Requires string or integer year.
+                'Season': currentSeason, # Requires string or integer year.
                 'GameScope': '',   # Required but empty string accepted
                 'PlayerExperience': '',# Required but empty string accepted
                 'PlayerPosition': '',# Required but empty string accepted
@@ -91,7 +91,7 @@ class League(search.Search):
         
     '''
     def __init__(self, **params):
-        search.Search.__init__(self, **params)
+        Search.__init__(self, **params)
         # create dictionary of the endpoints assigned to each method. 
         # these could also have been stored inside each method. 
         # and that might have been a better choice, but I like
@@ -140,7 +140,7 @@ class League(search.Search):
                 'SeasonType':'Regular Season', # Requires string input
                 'VsConference': '',# Required but empty string accepted 
                 'VsDivision':'',   # Required but empty string accepted
-                'Season': search.currentSeason, # Requires string or integer year.
+                'Season': currentSeason, # Requires string or integer year.
                 'GameScope': '',   # Required but empty string accepted
                 'PlayerExperience': '',# Required but empty string accepted
                 'PlayerPosition': '',# Required but empty string accepted

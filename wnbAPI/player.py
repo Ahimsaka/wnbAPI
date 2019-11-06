@@ -36,10 +36,9 @@ relevant to the current 2019 WNBA Most Valuable Player, Elena Delle Donne.
 For information on the search history capabilities inherited from the Search 
 method, please see the search module documentation. 
 """
-import search
-
+from wnbAPI.search import Search, currentSeason
              
-class Player(search.Search):
+class Player(Search):
     '''
     Extends Search class with methods to access endpoints for player data.
     
@@ -93,7 +92,7 @@ class Player(search.Search):
              }
     '''
     def __init__(self, **params):
-        search.Search.__init__(self, **params)
+        Search.__init__(self, **params)
         # create dictionary of the endpoints assigned to each method. 
         # these could also have been stored inside each method. 
         # and that might have been a better choice, but I like
@@ -149,7 +148,7 @@ class Player(search.Search):
             'SeasonType':'Regular Season', # Requires string input
             'VsConference': '',# Required but empty string accepted 
             'VsDivision':'',  # Required but empty string accepted
-            'Season': search.currentSeason, # Requires string or integer year.
+            'Season': currentSeason, # Requires string or integer year.
             'PlayerID': '203399', # 2019 WNBA MVP Elena Delle Donne
                 }
                

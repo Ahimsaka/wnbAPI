@@ -38,9 +38,9 @@ method, please see the search module documentation.
     
 """
 
-import search
+from wnbAPI.search import Search, currentSeason, teamLogo
     
-class Team(search.Search):
+class Team(Search):
     '''
         Extends Search class with methods to access endpoints for team data.
         
@@ -125,9 +125,7 @@ class Team(search.Search):
           
     '''
     def __init__(self, **params):
-        search.Search.__init__(self, **params)
-        
-        
+        Search.__init__(self, **params)      
         # create dictionary of the endpoints assigned to each method. 
         # these could also have been stored inside each method. 
         # and that might have been a better choice, but I like
@@ -185,7 +183,7 @@ class Team(search.Search):
             'TeamID':'1611661322', # 2019 World Champion Washington Mystics
             'VsConference': '',# Required but empty string accepted 
             'VsDivision':'',  # Required but empty string accepted
-            'Season': search.currentSeason # Requires string or integer year. 
+            'Season': currentSeason # Requires string or integer year. 
             }
         
 
@@ -281,7 +279,7 @@ class Team(search.Search):
         if params: 
             self.setParams(params)
             
-        return search.teamLogo(TeamID =self.params.get('TeamID','1611661328'))
+        return teamLogo(TeamID =self.params.get('TeamID','1611661328'))
         
     def schedule(self, **params):
         '''
