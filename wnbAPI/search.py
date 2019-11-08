@@ -60,6 +60,17 @@ are built, and also contains a handful of convenience methods.
     
     s.getParams() shows the current param values
     
+    s.getParamsList() returns dict of all known possible param values, keyed
+    by the param name.
+    
+    s.clearParams() restores params to empty dict. called from a subclass
+    of search, the empty dict will be overridden with the object's required 
+    params on the next method call (unless the method has its own required
+    params, and then those will be used)
+    
+    s.removeParam(param) requires a string as an argument. If s.params has
+    a key matching the input string, it is deleted. 
+    
     s.getRequiredParams() returns the default required params for the object.
        - For the Search() class, this is an empty dictionary. 
        - Each of the subclasses have their own set of generic required 
@@ -84,17 +95,18 @@ are built, and also contains a handful of convenience methods.
     s.back() and s.forw() are used to move the pointer through the search
     history. 
     
-    s.pointerParams() retrieves the parameters which were used to generate
+    s.getPointerParams() returns the parameters which were used to generate
     the data currently showing in the pointer. 
-        - Call s.setParams(s.pointerParams()) to easily reset the 
-        parameters to the values used in any previous search. 
+    
+    s.setPointerParams() sets params to the parameters which were used to 
+    generate the data currently showing in the pointer
     
     s.dataFrame() returns a pandas dataFrame describing the object currently
     in the pointer. 
         - This dataFrame is not stored and should always be set to a
         variable for further processing. 
     
-    s.shotChartDetail() is a special method. It is currently the only
+    s.shotchartDetail() is a special method. It is currently the only
     endpoint method that is used by all subclasses, so it lives here
     on the superclass. 
       
@@ -133,7 +145,7 @@ import requests            # import requests to make requests
 # Import default headers, basic team info, currentSeason value, 
 # and list of all possible parameters. 
 from .resources import *
-     
+#from resources import *
 
 class Search(object):
     '''
@@ -169,14 +181,21 @@ class Search(object):
         initializes to an empty dictionary. To perform a search requires using the 
         Search object's search method, which we'll come to later. 
         '''
-        # Set up history functionality: 
-        self.history = [] # store endpoint/param in history to reduce API calls
-        self.index = 0    # track index of history for back and forward funcs
-        self.data = {}    # store search data 
-        self.pointer = {} # hold the "current" data set
+        # Set up history functionality:
+        self.endpoints = {} # initialize endpoints to empty dictionary
+        self.history = []   # store list of tuples of endpoint/param in 
+                            # history to reduce API calls
+        
+        self.index = 0      # track index of history for back and forward funcs
+        
+        self.data = {}      # store search data. Will contain tuples of 
+                            # (params, data object) keyed by tuples of 
+                            # (endpoint, str(params))
+                            
+        self.pointer = {}   # hold the "current" data set
     
-        self.params = {}  # intialize params to empty dictionary to explicitly
-                          # declare type
+        self.params = {}    # intialize params to empty dictionary to explicitly
+                            # declare type
                           
         self.required_params = {} # initialize requiredParams to empty dictionary
                                   # to explicitly declare type. 
@@ -215,7 +234,6 @@ class Search(object):
         dictionary. Params from a prior search which are not included in the 
         new dictionary will remain set their existing values. 
         '''
-        self.prevParams = self.params
         self.params.update(params)
         
     def getRequiredParams(self):
@@ -225,6 +243,26 @@ class Search(object):
         return self.required_params
     
     def getParams(self):
+        '''
+        returns currents params
+        '''
+        return self.params
+    
+    def clearParams(self):
+        '''
+        delete all input params, restoring search to the class's 
+        required params
+        '''
+        self.params = {}
+        
+    def removeParam(self, param):
+        '''
+        remove a single param from params (key and value)
+        '''
+        if self.params.get(param):
+            del self.params[param]
+    
+    def getParamList(self):
         '''
         returns list of all known parameter keys and accepted values for
         stats.wnba.com
@@ -289,11 +327,11 @@ class Search(object):
         # should reflect that. 
         self.index = len(self.history)-1
         
-        # check if endpooint/parameter combination has been requested during this session
-        if (endpoint, str(params)) in self.history[:-1]:                        
+        # check if endpoint/parameter combination has been requested during this session
+        if self.data.get((endpoint, str(params)), 0):
             # if the search has already been used, return the result of the
             # previous search. 
-            return self.data[endpoint][str(params)][1]
+            return self.data[(endpoint, str(params))][1]
         
     
         s = requests.Session()  # initialize requests.Session
@@ -311,7 +349,7 @@ class Search(object):
         
         while True:                                      # open loop
             try:                                         # handle exceptions
-                data = s.get(endpoint, timeout=(4,100))  # attempt request 
+                datum = s.get(endpoint, timeout=(4,100))  # attempt request 
             except (requests.exceptions.Timeout,         
                     requests.exceptions.TooManyRedirects, # for all exceptions
                     requests.exceptions.RequestException) as e: 
@@ -325,30 +363,32 @@ class Search(object):
             else: # if we get through the try statement without an error 
                   # store the data in history
                 if not self.data.get(endpoint,False):
-                    self.data[endpoint] = {}
+                    self.data[(endpoint, str(params))] = {}
                 
                 if not DEBUG:
-                    self.data[endpoint][str(params)] = (params, data.json())
+                    self.data[(endpoint, str(params))] = (params, datum.json())
                     # set the new pointer
-                    self.pointer = data.json()
+                    self.pointer = datum.json()
                     # and return the data
-                    return data.json()
+                    return datum.json()
                 if DEBUG:
-                     self.data[endpoint][str(params)] = (params, data)
-                     self.pointer = data
-                     return data
+                     self.data[(endpoint, str(params))] = (params, datum)
+                     self.pointer = datum
+                     return datum
             
     def back(self):
         '''
         moves pointer back one search in history. if the current search was
         first in the session, moves to the most recent search. 
         '''
+        if not self.history:
+            return 'No searches recorded.'
         self.index -= 1
         if self.index < 0:
             self.index = len(self.history)-1
             
         newPointer = self.history[self.index]
-        self.pointer = self.data[newPointer[0]][newPointer[1]][1]        
+        self.pointer = self.data[(newPointer)][1]    
         return self.pointer
     
     def forw(self):
@@ -356,20 +396,33 @@ class Search(object):
         moves pointer to the next search in history. if current search
         is the most recent, moves to the first search of session. 
         '''
+        if not self.history:
+            return 'No searches recorded.'
         self.index += 1
         if self.index > len(self.history) -1:
             self.index = 0
             
         newPointer = self.history[self.index]
-        self.pointer = self.data[newPointer[0]][newPointer[1]][1]
+        self.pointer = self.data[(newPointer)][1]
         return self.pointer
     
-    def pointerParams(self):
+    def getPointerParams(self):
         '''
-        Restores the paramaters that were set for the search that is 
+        Returns the paramaters that were set for the search that is 
         currently displayed in self.pointer
         '''
-        self.params = self.data[self.history[self.index][0]][self.history[self.index][1]][0]
+        return self.data[self.history[self.index]][0]
+        
+    def setPointerParams(self):
+        '''
+        Sets the current params to the value returned by calling
+        self.getPointerParams()
+        '''
+        # first clear existing Params, because setParams uses dict.update(),
+        # so params with keys that were not included in the original search
+        # won't be removed unless we clear them first. 
+        self.clearParams()
+        self.setParams(self.getPointerParams())
         
     def dataFrame(self):
         '''
@@ -406,7 +459,7 @@ class Search(object):
             return 'Unable to find search results.'
         return df
     
-    def shotChartDetail(self, **params):
+    def shotchartDetail(self, **params):
         '''
         Method added 11/1 for shotChartDetail endpoint
         
@@ -441,11 +494,11 @@ class Search(object):
         '''
         
         # initialize empty dictionary
-        requiredParams = {}
+        required_params = {}
         # fill it with object's default required params
-        requiredParams.update(self.requiredParams)
+        required_params.update(self.required_params)
         # insert additional defaults
-        requiredParams.update({'PlayerID': 0,
+        required_params.update({'PlayerID': 0,
                                'RookieYear': '',
                                'ContextMeasure': 'PTS',
                                'GameID': '',
@@ -453,7 +506,7 @@ class Search(object):
                                'TeamID': '0'
                                })
         # run the search    
-        return self.search('https://stats.wnba.com/stats/shotchartdetail', requiredParams, params)
+        return self.search('https://stats.wnba.com/stats/shotchartdetail', required_params, params)
 
 
 ########################################################################
