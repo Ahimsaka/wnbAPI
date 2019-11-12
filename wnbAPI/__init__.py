@@ -68,6 +68,7 @@ There are two ways to use the search objects.
            P = Player()
            T = Team()
            L = League()
+           G = Game()
            
       With with params, (conventionally notated as SubclassName(**params)):
           

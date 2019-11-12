@@ -135,7 +135,7 @@ Resources module can be called directly:
     
 """
 DEBUG = False # set Debug to true and searches will return response objects
-              # instead of json. 
+#DEBUG = True # instead of json. 
 
 import numpy as np         # import numpy as pandas pre-req
 import pandas as pd        # import pandas to look at data 
@@ -149,7 +149,7 @@ from .resources import *
 
 class Search(object):
     '''
-    While the search class is not intended for independent usage, it is 
+    While the Search class is not intended for independent usage, it is 
     technically possible to do so, and could be used to handle parameters
     for queries to any API that is willing to accept the headers 
     (which are stored in the resources module and can't be changed inside 
@@ -197,14 +197,14 @@ class Search(object):
         self.params = {}    # intialize params to empty dictionary to explicitly
                             # declare type
                           
-        self.required_params = {} # initialize requiredParams to empty dictionary
+        self.requiredParams = {} # initialize requiredParams to empty dictionary
                                   # to explicitly declare type. 
-       # Though 3 of the subclasses have large numbers of common required 
-       # params,  the current implementation is to explicitly declare all 
-       # required params at the class level rather than inheriting
-       # common values. I believe this will make it easier to add
-       # possible future subclasses, and makes it easier to determine
-       # what parameter values will be passed to search from each method. 
+        # Though 3 of the subclasses have large numbers of common required 
+        # params,  the current implementation is to explicitly declare all 
+        # required params at the class level rather than inheriting
+        # common values. I believe this will make it easier to add
+        # possible future subclasses, and makes it easier to determine
+        # what parameter values will be passed to search from each method. 
         
         # if object was initialized with params argument, set the params. 
         if params:
@@ -238,9 +238,9 @@ class Search(object):
         
     def getRequiredParams(self):
         '''
-        returns required_params for class
+        returns requiredParams for class
         '''
-        return self.required_params
+        return self.requiredParams
     
     def getParams(self):
         '''
@@ -269,7 +269,7 @@ class Search(object):
         '''
         return param_list
         
-    def search(self, endpoint, required_params, params):
+    def search(self, endpoint, requiredParams, params):
         '''
         univeral method attempts to GET the selected URL with the params
         currently stored in self.params as the parameter values.
@@ -301,19 +301,15 @@ class Search(object):
         if params:
             self.setParams(params)
         
-        # initialize an empty dictionary to collect parameters for this search
-        params = {}
         
-        # first fill the empty dictionary with all required parameter values. 
-        if required_params:
-            params.update(required_params)
-            
-        # update the dictionary with all values from self.params and
-        # overide any required_params if the same key exists in both sources
-        params.update(self.params)
+        
+        # if requiredParams argument is submitted, update the params
+        if requiredParams:
+            self.setParams(requiredParams)
+      
         
         # assign endpoint/parameter combination to history array
-        self.history.append((endpoint, str(params)))
+        self.history.append((endpoint, str(self.params)))
         # this may result in the same endpoint/parameter combination being
         # included in the array multiple times. This is intentional. If a
         # search is repeated, the user should see that search at both positions
@@ -328,15 +324,14 @@ class Search(object):
         self.index = len(self.history)-1
         
         # check if endpoint/parameter combination has been requested during this session
-        if self.data.get((endpoint, str(params)), 0):
+        if self.data.get((endpoint, str(self.params)), 0):
             # if the search has already been used, return the result of the
             # previous search. 
-            return self.data[(endpoint, str(params))][1]
+            return self.data[(endpoint, str(self.params))][1]
         
-    
-        s = requests.Session()  # initialize requests.Session
+        s = requests.Session()
         s.headers = headers     # set headers
-        s.params = params       # set params
+        s.params = self.params       # set params
         
         # Set up error handling for the upcoming API request. 
         # These features only became necessary when I was testing the object
@@ -350,6 +345,7 @@ class Search(object):
         while True:                                      # open loop
             try:                                         # handle exceptions
                 datum = s.get(endpoint, timeout=(4,100))  # attempt request 
+                s.close()
             except (requests.exceptions.Timeout,         
                     requests.exceptions.TooManyRedirects, # for all exceptions
                     requests.exceptions.RequestException) as e: 
@@ -359,23 +355,23 @@ class Search(object):
                 if retry_flag == 5:                      # if we hit 5, give up
                     print(errors)
                     raise e
-                
             else: # if we get through the try statement without an error 
-                  # store the data in history
+                # store the data in history
                 if not self.data.get(endpoint,False):
-                    self.data[(endpoint, str(params))] = {}
+                    self.data[(endpoint, str(self.params))] = {}
                 
                 if not DEBUG:
-                    self.data[(endpoint, str(params))] = (params, datum.json())
+                    self.data[(endpoint, str(self.params))] = (self.params, datum.json())
                     # set the new pointer
                     self.pointer = datum.json()
                     # and return the data
                     return datum.json()
                 if DEBUG:
-                     self.data[(endpoint, str(params))] = (params, datum)
+                     self.data[(endpoint, str(self.params))] = (self.params, datum)
                      self.pointer = datum
                      return datum
-            
+
+
     def back(self):
         '''
         moves pointer back one search in history. if the current search was
@@ -494,19 +490,34 @@ class Search(object):
         '''
         
         # initialize empty dictionary
-        required_params = {}
+        requiredParams = {}
         # fill it with object's default required params
-        required_params.update(self.required_params)
+        requiredParams.update(self.requiredParams)
         # insert additional defaults
-        required_params.update({'PlayerID': 0,
+        requiredParams.update({'PlayerID': 0,
                                'RookieYear': '',
                                'ContextMeasure': 'PTS',
                                'GameID': '',
                                'PlayerPosition': '',
-                               'TeamID': '0'
+                               'TeamID': '0',
+                               'DateFrom': '',  
+                               'DateTo':'',
+                               'GameSegment': '',
+                               'LastNGames':'0',
+                               'LeagueID':'10',
+                               'Location':'',
+                               'MeasureType': 'Base',
+                               'Month':'0',
+                               'Period':'0',
+                               'Outcome':'',
+                               'OpponentTeamID': '0',
+                               'VsConference': '',
+                               'VsDivision':'',
+                               'SeasonSegment':'',
+                               'SeasonType':'Regular Season'
                                })
         # run the search    
-        return self.search('https://stats.wnba.com/stats/shotchartdetail', required_params, params)
+        return self.search('https://stats.wnba.com/stats/shotchartdetail', requiredParams, params)
 
 
 ########################################################################
@@ -532,7 +543,9 @@ def logo():
     
     s.headers = headers
         
-    return s.get('https://stats.wnba.com/media/img/league/wnba-logo.svg')
+    outp = s.get('https://stats.wnba.com/media/img/league/wnba-logo.svg')
+    s.close()
+    return outp
         
 def logo2():
     '''
@@ -550,9 +563,11 @@ def logo2():
     s = requests.Session()
     
     s.headers = headers
-
-    return s.get('https://stats.wnba.com/media/img/league/wnba-secondary-logo.svg')
     
+    outp =  s.get('https://stats.wnba.com/media/img/league/wnba-secondary-logo.svg')
+    s.close()
+    return outp 
+
 def nbaLogo():
     '''
     method to get nba loga as svg
@@ -570,8 +585,9 @@ def nbaLogo():
     
     s.headers = headers
    
-    return s.get('https://stats.wnba.com/media/img/league/nba-logoman.svg')  
-
+    outp = s.get('https://stats.wnba.com/media/img/league/nba-logoman.svg')  
+    s.close()
+    return outp
     
 def teamLogo(TeamID='1611661321'):
         '''
@@ -596,8 +612,10 @@ def teamLogo(TeamID='1611661321'):
             
         shortCode = teams[TeamID]['ta']
        
-        return s.get('https://stats.wnba.com/media/img/teams/logos/' + shortCode + '.svg')
-
+        outp =  s.get('https://stats.wnba.com/media/img/teams/logos/' + shortCode + '.svg')
+        s.close()
+        return outp
+    
 
 def schedule(TeamID='1611661324', Season=currentSeason):
     '''
@@ -618,9 +636,10 @@ def schedule(TeamID='1611661324', Season=currentSeason):
     
     teamName = teams[TeamID]['tn'].lower() #retrieve team shortCode 
         
-    return s.get('https://data.wnba.com/data/10s/v2015/json/mobile_teams/wnba/' + 
+    outp = s.get('https://data.wnba.com/data/10s/v2015/json/mobile_teams/wnba/' + 
               str(Season) + '/teams/' + teamName + '_schedule.json')
-                 
+    s.close()
+    return outp             
 
         
 def __main__():

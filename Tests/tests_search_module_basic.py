@@ -3,18 +3,14 @@
 """
 Created on Wed Nov  6 21:19:45 2019
 
-@author: devinarnold
+File spun off from original test_basic file because the basic unit tests
+had gotten long enough to lag my IDE a bit, so it seemed best to split them
+up. 
 """
 from .context import wnbAPI
 #from context import wnbAPI
 import unittest # import unittest module
                 #    - see docs.python.org/3/library/unittest.html
-
-########################################################################
-####                                                                ####
-####                       basic tests module                       ####
-####                                                                ####
-########################################################################
 
 ####################################################################
 ####                                                            ####
@@ -25,59 +21,94 @@ import unittest # import unittest module
 Blackbox test all functions of the search module, creating Search object, 
 and all Search object methods.
 '''
-################################################################
-####                                                        ####
-####                   search.logo function tests           ####
-####                                                        ####
-################################################################
-'''
-Test should call search.logo() with no arguments (accepts none).
-       
-Expected return value should be a response object. 
-    - Response object should have status code 200
-    - Response object should always include the same URL
-    - Response object.content should be a bits encoded svg file.
-'''
-################################################################
-####                                                        ####
-####                   search.logo2 tests                   ####
-####                                                        ####
-################################################################
-'''
-Test should call search.logo2() with no arguments (accepts none).
-        
-Expected return value should be a response object. 
-    - Response object should have status code 200
-    - Response object should always include the same URL
-    - Response object.content should be a bits encoded svg file.
-'''
-################################################################
-####                                                        ####
-####                  search.nbaLogo tests                  ####
-####                                                        ####
-################################################################
-'''
-Test should call search.nbnLogo() with no arguments (accepts none).
-     
-Expected return value should be a response object. 
-    - Response object should have status code 200
-    - Response object should always include the same URL
-    - Response object.content should be a bits encoded svg file.
-'''
-################################################################
-####                                                        ####
-####                 search.teamLogo tests                  ####
-####                                                        ####
-################################################################
-'''
-Test should call search.teamLogo() with no arguments (accepts none).
-        
-Expected return value should be a response object. 
-    - Response object should have status code 200
-    - Response object should always return the same URL template, 
-      with the appropriate team shortcode included. 
-    - Response object.content should be a bits encoded svg file.
-'''
+class TestSearchModuleConvenienceFunctions(unittest.TestCase):
+    '''
+    This testcase should include tests for all non-Class based
+    search module functions. 
+
+    each function should be tested twice. 
+
+    once when called as wnbAPI.search.function(), 
+    and again when called as wnbAPI.function(). 
+
+    Current module design should ensure that both of those
+    calls return the same value. However, I think testing both
+    will be good insurance against a future refactor breaking one
+    or the other but not both. 
+    '''
+
+    def test_logo_method(self):
+        '''
+        test logo() method.
+
+        logo() returns a response object. 
+        '''
+        # treat res object as bool to test for status code 200
+        self.assertTrue(wnbAPI.logo())
+        # confirm that the res object was served from the expected url
+        self.assertEqual(wnbAPI.logo().url, 'https://stats.wnba.com/media/img/league/wnba-logo.svg')
+        # confirm res object content is a bytes object
+        self.assertEqual(type(wnbAPI.logo().content), bytes)
+        # confirm that both call methods return identical content
+        self.assertEqual(wnbAPI.logo().content, wnbAPI.search.logo().content)
+    
+    def test_logo2_method(self):
+        '''
+        test logo2() method.
+
+        logo2() returns a response object. 
+        '''
+        # treat res object as bool to test for status code 200
+        self.assertTrue(wnbAPI.logo2())
+        # confirm that the res object was served from the expected url
+        self.assertEqual(wnbAPI.logo2().url, 'https://stats.wnba.com/media/img/league/wnba-secondary-logo.svg')
+        # confirm res object content is a bytes object
+        self.assertEqual(type(wnbAPI.logo2().content), bytes)
+        # confirm that both call methods return identical content
+        self.assertEqual(wnbAPI.logo2().content, wnbAPI.search.logo2().content)
+
+    def test_nbalogo_method(self):
+        '''
+        test nbaLogo() method.
+
+        nbaLogo() returns a response object. 
+        '''
+        # treat res object as bool to test for status code 200
+        self.assertTrue(wnbAPI.nbaLogo())
+        # confirm that the res object was served from the expected url
+        self.assertEqual(wnbAPI.nbaLogo().url, 'https://stats.wnba.com/media/img/league/nba-logoman.svg')
+        # confirm res object content is a bytes object
+        self.assertEqual(type(wnbAPI.nbaLogo().content), bytes)
+        # confirm that both call methods return identical content
+        self.assertEqual(wnbAPI.nbaLogo().content, wnbAPI.search.nbaLogo().content)
+    
+    def test_teamlogo_method(self):
+        '''
+        test teamLogo() method.
+
+        teamLogo() returns a response object. 
+
+        We could run this test 12 times -- once for each team--
+        but the url for each team's logo is static, and if 
+        for some reason one of them stops working without
+        breaking the others, the odds are very high that the problem
+        is on the backend and there's nothing we can do about it.
+
+        On our end, the url string is generated by looking up the
+        TeamID param of the Search object in the resources.teams dict, 
+        and finding the 3 letter shortcode. 
+        '''
+        # treat res object as bool to test for status code 200
+        self.assertTrue(wnbAPI.teamLogo())
+        # confirm that the res object was served from the expected url
+        # we use the DAL logo url because that is what happens to be the
+        # default. 
+        self.assertEqual(wnbAPI.teamLogo().url, 'https://stats.wnba.com/media/img/teams/logos/DAL.svg')
+        # confirm res object content is a bytes object
+        self.assertEqual(type(wnbAPI.teamLogo().content), bytes)
+        # confirm that both call methods return identical content
+        self.assertEqual(wnbAPI.teamLogo().content, wnbAPI.search.teamLogo().content)
+
 ################################################################
 ####                                                        ####
 ####              search.Search() object TestCase           ####
@@ -115,7 +146,7 @@ class TestSearchObjectCreation(unittest.TestCase):
         
         self.endpoints == {}
         self.params == {}
-        self.required_params == {}
+        self.requiredParams == {}
         self.pointer == {}
         self.data == {}
         self.history == []
@@ -123,7 +154,7 @@ class TestSearchObjectCreation(unittest.TestCase):
         '''
         self.assertEqual(self.session.endpoints, {})
         self.assertEqual(self.session.params,{})
-        self.assertEqual(self.session.required_params, {})
+        self.assertEqual(self.session.requiredParams, {})
         self.assertEqual(self.session.pointer,{})
         self.assertEqual(self.session.data, {})
         self.assertEqual(self.session.history,[])
@@ -131,16 +162,6 @@ class TestSearchObjectCreation(unittest.TestCase):
      
 class TestSearchObjectMethods(unittest.TestCase):
     '''
-    This TestCase should include tests to create a Search object. 
-       - Search object should initialize with:
-           self.endpoints == {}
-           self.params == {}
-           self.requiredParams == {}
-           self.pointer == {}
-           self.data == {}
-           self.history == []
-           self.index == 0
-        
     This test set should include tests for each individual Search
     object method. 
     '''
@@ -325,7 +346,11 @@ class TestSearchObjectMethods(unittest.TestCase):
         self.session.clearParams()
         self.assertEqual(self.session.getParams(), {})
         self.assertEqual(self.session.params, {})        
-        
+    """   
+    METHOD REQUIRED PARAMS ARE INSUFFICIENT, METHOD WORKS WHEN CALLED
+    BY PLAYER SUBCLASS 11/8. 
+    WRITE TEST WHEN FIXED
+    
     def test_shotchartdetail_method(self):
         '''
         Test shotchartDetail() method
@@ -338,39 +363,22 @@ class TestSearchObjectMethods(unittest.TestCase):
         is not working correctly. If both methods are failing, always
         debug Search.search() before debugging shotchartdetail. 
         '''
+    """
+    def test_getrequiredparams_method(self):
+        '''
+        test getRequiredParams()
         
-        ############################################################
-        ####                                                    ####
-        ####       Search.getRequiredParams() method test       ####
-        ####                                                    ####
-        ############################################################
-        ############################################################
-        ####                                                    ####
-        ####            Search.search() method test             ####
-        ####                                                    ####
-        ############################################################
+        '''
+        self.assertEqual(self.session.getRequiredParams(), {})
+        self.assertEqual(self.session.getRequiredParams(), self.session.requiredParams)
+    
+    def test_search_method(self):
+        '''
+        test the core search method
+        '''
+        t = self.session.search('https://stats.wnba.com/stats/teamdetails', {}, {'TeamID':'1611661322'})
         
-        ############################################################
-        ####                                                    ####
-        ####        Search.shotChartDetail() method test        ####
-        ####                                                    ####
-        ############################################################
-
-
-####################################################################
-####                                                            ####
-####                    player module tests                     ####
-####                                                            ####
-####################################################################
-
-####################################################################
-####                                                            ####
-####                     team module tests                      ####
-####                                                            ####
-####################################################################
-
-####################################################################
-####                                                            ####
-####                    league module tests                     ####
-####                                                            ####
-####################################################################
+        self.assertEqual(type(t), dict)
+        self.assertEqual(self.session.params, {'TeamID': '1611661322', 'paramsdict3':''})
+        self.assertEqual(self.session.pointer, t)
+        

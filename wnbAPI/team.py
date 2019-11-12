@@ -173,7 +173,7 @@ class Team(Search):
             'Month':'0',      # 0 stands for all months 
             'Outcome':'',     # Required but empty string accepted
             'OpponentTeamID': '0',# 0 stands for all opponents
-            'PaceAdjust':'N', # Requires Y or N 
+            'PaceAdjust':'N',
             'PerMode': 'PerGame',# Requires string input
             'Period': '0',    # 0 stands for all periods
             'PlusMinus':'N',  # Requires Y or N
@@ -183,7 +183,7 @@ class Team(Search):
             'TeamID':'1611661322', # 2019 World Champion Washington Mystics
             'VsConference': '',# Required but empty string accepted 
             'VsDivision':'',  # Required but empty string accepted
-            'Season': currentSeason # Requires string or integer year. 
+            'Season': str(currentSeason) # Requires string or integer year. 
             }
         
 
@@ -364,7 +364,7 @@ class Team(Search):
         if params: 
             self.setParams(params)
         #call the schedule method that was imported earlier.     
-        return search.schedule(TeamID=self.params.get('TeamID','1611661322'), Season=self.params.get('Season', '2019'))
+        return self.search.schedule(TeamID=self.params.get('TeamID','1611661322'), Season=self.params.get('Season', '2019'))
         
         
     def gamelogs(self, **params):
@@ -524,7 +524,7 @@ class Team(Search):
         '''            
         requiredParams = {}
         
-        requiredParams.updated(self.requiredParams)
+        requiredParams.update(self.requiredParams)
         
         requiredParams.update({'ClutchTime': 'Last 5 Minutes',
                                'AheadBehind':'Ahead or Behind',

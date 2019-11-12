@@ -35,7 +35,6 @@ headers = {'authority': 'a.data.nba.com',
            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6)' \
                          'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'  \
                          '77.0.3865.90 Safari/537.36',
-           'Connection': 'close'
            }
 
 
@@ -52,7 +51,12 @@ headers = {'authority': 'a.data.nba.com',
 # This dictionary will also eventually be used as the basis
 # for the planned typed search functionality, allowing users to
 # retrieve a TeamID based on the team's name or location 
-teams = {
+teams = {'1611661330': {'ta': 'ATL',     # Atlanta and Chicago's data wasn't
+                        'tn':'Dream',     # included in the original dict I pulled
+                        'tc':'Atlanta'}, # I've added the minimum requirement
+        '1611661329': {'ta':'CHI',       # and will finish filling out as needed
+                       'tn': 'Sky',
+                       'tc':'Chicago'},                        
         '1611661323': {'tid': '1611661323',
                        'tn': 'Sun',
                        'tc': 'Connecticut',

@@ -580,67 +580,14 @@ class Game(Search):
                 'StartPeriod': '0'
                 }
         # update dict with class required params
-        requiredParams.update(self.rrequiredParams)
+        requiredParams.update(self.requiredParams)
         # return the search
         return self.search(self.endpoints['playbyplayv2'], requiredParams, params)
     
-        
-    def shotChart(self, title='untitled'):
-        '''
-        method to generate game chart svgs
-        
-        generates  /Web Resources/title.js and /Web Resources/title.html
-        '''
-        templatePath = 'Web Resources/template'
-        
-        folderPath = 'Web Resources/Game Charts/' + title + '/'
-                
-        if not isdir(folderPath):
-            makedirs(folderPath)
-        
-        temptitle = title[:]
-        
-        print(temptitle)
-        print(folderPath + temptitle + '.js')
-        i = 1
-        while True:
-            if isfile(folderPath + temptitle + '.html'):
-                temptitle = title + ' - ' + str(i)
-                i+= 1
-            else:
-                break
-        
-        title = temptitle
-        print(title)
-        
-        data = '`' + json.dumps(self.pbp().json(), indent=0) + '`'
-        template = ''
-    
-            
-        with open(templatePath + '.html') as f:
-            template = f.read().replace('PUT_DATA', str(data))
-            
-        with open(folderPath + title + '.html', 'w+') as f:
-            f.write(template)
-            
+      
+
+
         
 def __main__():
     pass
 
-def tempGetHeaders(endpoint):
-    sample = endpoint()
-    if sample.get('resultSet', False):
-        resSets = [sample['resultSet']]
-    elif sample.get('resultSets', False):
-        resSets = sample['resultSets']
-        if type(resSets) == dict:
-            resSets = [resSets]
-    for table in resSets:
-        print("            '" + table['name'] + "'")
-        for i in range(len(table['headers'])):
-            if i % 3 == 0:
-                print('                ', end='')
-            print("'" + table['headers'][i], end="', ")
-            if (i+1) % 3 == 0:
-                print('')
-        print('\n')
